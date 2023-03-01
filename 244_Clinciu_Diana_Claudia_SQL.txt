@@ -1,0 +1,1488 @@
+-- 4.
+-- creare tabele
+
+CREATE TABLE raids
+(
+    raid_id    NUMBER(38) PRIMARY KEY,
+    "name"     VARCHAR(255),
+    "location" VARCHAR(255),
+    players_nr NUMBER(38) CHECK (players_nr BETWEEN 5 AND 45),
+    min_level  NUMBER(38) CHECK (min_level BETWEEN 10 AND 60)
+);
+
+CREATE TABLE players
+(
+    player_id NUMBER(38) PRIMARY KEY,
+    "name"    VARCHAR(255),
+    realm     VARCHAR(255),
+    race      VARCHAR(255),
+    gender    VARCHAR(1) CHECK (gender LIKE 'M' OR gender LIKE 'F'),
+    "class"   VARCHAR(255),
+    "role"    VARCHAR(255) CHECK ("role" LIKE 'healer' OR "role" LIKE 'tank' OR "role" LIKE 'damage-dealer'),
+    "level"   NUMBER(38) DEFAULT 1 CHECK ("level" BETWEEN 1 AND 60)
+);
+
+
+CREATE TABLE instances
+(
+    instance_id NUMBER(38) PRIMARY KEY,
+    create_date DATE NOT NULL
+);
+
+CREATE TABLE bosses
+(
+    boss_id NUMBER(38) PRIMARY KEY,
+    "name"  VARCHAR(255),
+    health  NUMBER(38),
+    damage  NUMBER(38),
+    mana    NUMBER(38)
+);
+
+ALTER TABLE bosses
+    ADD dificulty VARCHAR(255);
+
+CREATE TABLE maps
+(
+    map_id  NUMBER(38) PRIMARY KEY,
+    "name"  VARCHAR(255),
+    raid_id NUMBER(38) REFERENCES raids (raid_id),
+    boss_id NUMBER(38) REFERENCES bosses (boss_id)
+);
+
+CREATE TABLE enemies
+(
+    enemy_id NUMBER(38) PRIMARY KEY,
+    "name"   VARCHAR(255),
+    health   NUMBER(38),
+    damage   NUMBER(38)
+);
+
+
+CREATE TABLE abilities
+(
+    ability_id NUMBER(38) PRIMARY KEY,
+    "name"     VARCHAR(255),
+    mana_cost  NUMBER(38),
+    damage     NUMBER(38),
+    boss_id    NUMBER(38) REFERENCES bosses (boss_id)
+);
+
+CREATE TABLE rewards
+(
+    reward_id   NUMBER(38) PRIMARY KEY,
+    "name"      VARCHAR(255),
+    description VARCHAR(255),
+    sell_price  NUMBER(38),
+    boss_id     NUMBER(38) REFERENCES bosses (boss_id)
+);
+
+CREATE TABLE bonuses
+(
+    bonus_id NUMBER(38) PRIMARY KEY,
+    "name"   VARCHAR(255),
+    quantity NUMBER(38)
+);
+
+
+CREATE TABLE participates
+(
+    raid_id     NUMBER(38) REFERENCES raids (raid_id),
+    player_id   NUMBER(38) REFERENCES players (player_id),
+    instance_id NUMBER(38) REFERENCES instances (instance_id),
+    PRIMARY KEY (raid_id, player_id, instance_id)
+);
+
+CREATE TABLE "Exists"
+(
+    map_id   NUMBER(38) REFERENCES maps (map_id),
+    enemy_id NUMBER(38) REFERENCES enemies (enemy_id),
+    PRIMARY KEY (map_id, enemy_id)
+);
+
+CREATE TABLE has
+(
+    reward_id NUMBER(38) REFERENCES rewards (reward_id),
+    bonus_id  NUMBER(38) REFERENCES bonuses (bonus_id),
+    PRIMARY KEY (reward_id, bonus_id)
+);
+
+CREATE TABLE log_offs
+(
+    username VARCHAR(255),
+    time     TIMESTAMP
+);
+
+commit;
+
+-- 5.
+-- inserari
+CREATE SEQUENCE ids
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 0
+    MAXVALUE 1000000
+    NOCYCLE;
+
+INSERT INTO raids
+VALUES (ids.nextval, 'Eternal Palace', 'Nazjatar', 5, 60);
+INSERT INTO raids
+VALUES (ids.nextval, 'Sanctum of Domination', 'Torghast', 5, 40);
+INSERT INTO raids
+VALUES (ids.nextval, 'Icecrown Citadel', 'Icecrown', 5, 35);
+INSERT INTO raids
+VALUES (ids.nextval, 'The Nighthold', 'Suramar', 5, 35);
+INSERT INTO raids
+VALUES (ids.nextval, 'Court of Stars', 'Suramar', 5, 50);
+
+
+
+INSERT INTO bosses
+VALUES (ids.nextval, 'Queen Azhara', 121000, 4000, 100, NULL);
+INSERT INTO bosses
+VALUES (ids.nextval, 'Sylvanas Windrunner', 143000, 6000, 400, NULL);
+INSERT INTO bosses
+VALUES (ids.nextval, 'Lich King', 4300, 300, 40, NULL);
+INSERT INTO bosses
+VALUES (ids.nextval, 'Elisande', 6300, 700, 60, NULL);
+INSERT INTO bosses
+VALUES (ids.nextval, 'Talixae Flamewreath', 100000, 3000, 600, NULL);
+
+
+
+INSERT INTO maps
+VALUES (ids.nextval, 'Queens throne', 1, 6);
+INSERT INTO maps (map_id, "name", raid_id)
+VALUES (ids.nextval, 'The entrance', 1);
+INSERT INTO maps
+VALUES (ids.nextval, 'Pinnacle of Domination', 2, 7);
+INSERT INTO maps
+VALUES (ids.nextval, 'The nightspire', 4, 9);
+INSERT INTO maps
+VALUES (ids.nextval, 'The Frozen Throne', 3, 8);
+INSERT INTO maps
+VALUES (ids.nextval, 'Court of Stars', 5, 10);
+
+
+
+INSERT INTO players
+VALUES (ids.nextval, 'Elisa', 'Outland', 'Night elf', 'F', 'mage', 'damage-dealer', 60);
+INSERT INTO players
+VALUES (ids.nextval, 'Tiana', 'Outland', 'Blood elf', 'F', 'hunter', 'damage-dealer', 50);
+INSERT INTO players
+VALUES (ids.nextval, 'Julieta', 'Outland', 'Human', 'F', 'warrior', 'tank', 60);
+INSERT INTO players
+VALUES (ids.nextval, 'Melissa', 'Outland', 'Night elf', 'F', 'priest', 'healer', 60);
+INSERT INTO players
+VALUES (ids.nextval, 'Tyrande', 'Silvermoon', 'Night elf', 'F', 'priest', 'damage-dealer', 60);
+INSERT INTO players
+VALUES (ids.nextval, 'Zara', 'Moonglave', 'High elf', 'F', 'paladin', 'healer', 55);
+
+
+
+INSERT INTO instances
+VALUES (ids.nextval, DATE'2022-06-10');
+INSERT INTO instances
+VALUES (ids.nextval, DATE'2022-06-11');
+INSERT INTO instances
+VALUES (ids.nextval, DATE'2022-06-24');
+INSERT INTO instances
+VALUES (ids.nextval, DATE'2022-07-24');
+INSERT INTO instances
+VALUES (ids.nextval, DATE'2022-07-25');
+
+
+INSERT INTO participates
+VALUES (2, 17, 23);
+INSERT INTO participates
+VALUES (2, 18, 23);
+INSERT INTO participates
+VALUES (2, 19, 23);
+INSERT INTO participates
+VALUES (2, 20, 23);
+INSERT INTO participates
+VALUES (4, 21, 24);
+INSERT INTO participates
+VALUES (4, 22, 24);
+INSERT INTO participates
+VALUES (4, 17, 24);
+INSERT INTO participates
+VALUES (4, 18, 24);
+INSERT INTO participates
+VALUES (4, 19, 24);
+INSERT INTO participates
+VALUES (2, 17, 25);
+INSERT INTO participates
+VALUES (2, 18, 25);
+INSERT INTO participates
+VALUES (2, 19, 25);
+INSERT INTO participates
+VALUES (3, 20, 26);
+INSERT INTO participates
+VALUES (3, 18, 26);
+INSERT INTO participates
+VALUES (1, 19, 27);
+INSERT INTO participates
+VALUES (1, 21, 27);
+
+
+INSERT INTO rewards
+VALUES (ids.nextval, 'Bindings of the Herald', 'Binds when picked up', 320, 7);
+INSERT INTO rewards
+VALUES (ids.nextval, 'The Lady''s Necklace',
+        'The necklace shimmers, a remarkable piece of jewelry that doesn''t seem to succumb to the gloom that permeates the Ghostlands. Given the inscription, and where you found it, it must be the lost property of Lady Sylvanas Windrunner herself!',
+        1000, 7);
+INSERT INTO rewards
+VALUES (ids.nextval, 'Convergence of Fates', 'Binds when picked up', 400, 9);
+INSERT INTO rewards
+VALUES (ids.nextval, 'Mana-Tinged Pack',
+        'Contains assorted potions and magical reagents from the Broken Isles. Looted by players with the Manaseeker enchantment.',
+        50, 10);
+INSERT INTO rewards
+VALUES (ids.nextval, 'Warmace of Menethil', 'Binds when picked up', 430, 8);
+INSERT INTO rewards
+VALUES (ids.nextval, 'Cursed Lover''s Ring', 'No not touch! Ups I''ve touched it', 300, 6);
+INSERT INTO rewards (reward_id, "name", description, boss_id)
+VALUES (ids.nextval, 'Banshee''s Bow', 'A bow made out of a human spine. It has o dark violet glow.', 7);
+
+
+
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Stamina', 18);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Haste', 39);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Versatility', 29);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Magic', 100);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Stamina', 50);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Atack speed', 20);
+INSERT INTO bonuses
+VALUES (ids.nextval, 'Mastery', 30);
+
+INSERT INTO has
+VALUES (28, 35);
+INSERT INTO has
+VALUES (28, 36);
+INSERT INTO has
+VALUES (28, 37);
+INSERT INTO has
+VALUES (30, 37);
+INSERT INTO has
+VALUES (31, 37);
+INSERT INTO has
+VALUES (31, 38);
+INSERT INTO has
+VALUES (31, 39);
+INSERT INTO has
+VALUES (32, 40);
+INSERT INTO has
+VALUES (32, 41);
+INSERT INTO has
+VALUES (32, 39);
+INSERT INTO has
+VALUES (29, 39);
+
+INSERT INTO enemies
+VALUES (ids.nextval, 'Fallen angel', 100, 12);
+INSERT INTO enemies
+VALUES (ids.nextval, 'Agatha', 200, 24);
+INSERT INTO enemies
+VALUES (ids.nextval, 'Fellfire huntdog', 200, 32);
+INSERT INTO enemies
+VALUES (ids.nextval, 'Shivara', 300, 14);
+INSERT INTO enemies
+VALUES (ids.nextval, 'Skeleton', 300, 12);
+
+
+INSERT INTO "Exists"
+VALUES (11, 42);
+INSERT INTO "Exists"
+VALUES (11, 43);
+INSERT INTO "Exists"
+VALUES (12, 44);
+INSERT INTO "Exists"
+VALUES (12, 45);
+INSERT INTO "Exists"
+VALUES (13, 46);
+INSERT INTO "Exists"
+VALUES (13, 42);
+INSERT INTO "Exists"
+VALUES (14, 43);
+INSERT INTO "Exists"
+VALUES (14, 44);
+INSERT INTO "Exists"
+VALUES (15, 45);
+INSERT INTO "Exists"
+VALUES (15, 46);
+INSERT INTO "Exists"
+VALUES (16, 44);
+INSERT INTO "Exists"
+VALUES (16, 45);
+
+
+INSERT INTO abilities
+VALUES (ids.nextval, 'Fury of Frostmourne', 10, 100, 8);
+INSERT INTO abilities
+VALUES (ids.nextval, 'Raise Dead', 20, 120, 8);
+INSERT INTO abilities
+VALUES (ids.nextval, 'Domination Arrows', 11, 101, 7);
+INSERT INTO abilities
+VALUES (ids.nextval, 'Stop Time', 12, 130, 9);
+INSERT INTO abilities
+VALUES (ids.nextval, 'Bond of Flame', 20, 300, 10);
+INSERT INTO abilities
+VALUES (ids.nextval, 'Catastrophic Failure', 18, 180, 6);
+
+commit;
+
+select * from players;
+select * from participates;
+select * from instances;
+select * from raids;
+select * from bosses;
+select * from maps;
+select * from rewards;
+select * from bonuses;
+select * from has;
+select * from enemies;
+select * from "Exists";
+select * from abilities;
+select * from log_offs;
+
+
+-- 6.
+-- procedura stocata care primeste ca paramentru o luna si un an si afiseaza clasamentul jucatorilor din luna si anul acela
+-- (clasamentul se face dupa nr de boss-i infranti
+-- mai multi jucatori nu impart acelasi loc)
+CREATE OR REPLACE PROCEDURE ex6(month NUMBER, year NUMBER)
+    IS
+    TYPE player_rec IS RECORD
+                       (
+                           name  players."name"%TYPE,
+                           realm players.realm%TYPE,
+                           kills NUMBER
+                       );
+    TYPE vect_players IS VARRAY(1000) OF player_rec;
+    TYPE raid_ranking IS RECORD
+                         (
+                             raid_name raids."name"%TYPE,
+                             players   vect_players
+                         );
+    -- colectie 1 : colectie imbricata care contine numele raidului si lista de jucatori a acelui raid
+    TYPE rankings_tbl IS TABLE OF raid_ranking
+        INDEX BY BINARY_INTEGER;
+    rankings  rankings_tbl;
+    v_players vect_players;
+    -- colectie 2: vector de raiduri
+    TYPE raids_vect IS VARRAY(100) OF raids%ROWTYPE;
+    v_raids   raids_vect;
+BEGIN
+    SELECT * BULK COLLECT
+    INTO v_raids
+    FROM raids;
+
+    FOR i IN v_raids.first..v_raids.last
+        LOOP
+            SELECT MAX(players."name"),
+                   MAX(players.realm),
+                   COUNT(*) BULK COLLECT
+            INTO v_players
+            FROM players
+                     JOIN participates USING (player_id)
+                     JOIN instances USING (instance_id)
+                     JOIN raids USING (raid_id)
+                     JOIN maps USING (raid_id)
+                     JOIN bosses USING (boss_id)
+            WHERE raid_id = v_raids(i).raid_id
+              AND EXTRACT(MONTH FROM instances.create_date) = month
+              AND EXTRACT(YEAR FROM instances.create_date) = year
+            GROUP BY player_id
+            ORDER BY COUNT(*) DESC;
+
+            rankings(i).raid_name := v_raids(i)."name";
+            rankings(i).players := v_players;
+        END LOOP;
+
+    FOR i IN rankings.first..rankings.last
+        LOOP
+            dbms_output.put_line('Raid: ' || rankings(i).raid_name);
+
+            IF rankings(i).players.count = 0 THEN
+                dbms_output.put_line('The are no raids with the given dates.');
+            ELSE
+                dbms_output.put_line('Place    Player    Realm    Kills');
+                FOR j IN rankings(i).players.first..rankings(i).players.last
+                    LOOP
+                        dbms_output.put_line(j || CHR(9) || CHR(9) || rankings(i).players(j).name || CHR(9) || CHR(9) ||
+                                             rankings(i).players(j).realm || CHR(9) || CHR(9) ||
+                                             rankings(i).players(j).kills);
+                    END LOOP;
+            END IF;
+            dbms_output.put_line('-------------------------------------');
+        END LOOP;
+END ex6;
+
+BEGIN
+    ex6(6, 2022);
+END;
+
+-- 7.
+-- procedura care afieaza pentru fiecare raid cel mai activ jucator care face parte din realmul dat ca paramentru
+CREATE OR REPLACE PROCEDURE ex7(realm_name players.realm%TYPE)
+    IS
+    TYPE refcursor IS REF CURSOR;
+    v_cursor refcursor;
+    -- cursor 1 : cursor imbricat cu paramentru
+    CURSOR c(realm_name players.realm%TYPE) IS
+        (SELECT extern."name",
+                CURSOR (SELECT MAX("name"), COUNT(*)
+                        FROM players
+                                 JOIN participates USING (player_id)
+                        WHERE LOWER(realm) LIKE LOWER(realm_name)
+                          AND participates.raid_id = extern.raid_id
+                        GROUP BY player_id
+                        HAVING COUNT(*) = (SELECT MAX(COUNT(*))
+                                           FROM players
+                                                    JOIN participates USING (player_id)
+                                           WHERE LOWER(realm) LIKE LOWER(realm_name)
+                                             AND participates.raid_id = extern.raid_id
+                                           GROUP BY player_id))
+         FROM raids extern);
+    v_raid   raids."name"%TYPE;
+    v_nr     NUMBER;
+    v_name   players."name"%TYPE;
+    found    NUMBER := 0;
+    -- cursor 2 :
+    CURSOR c2 IS (SELECT DISTINCT realm
+                  FROM players);
+    error    players.realm%TYPE;
+    no_realm EXCEPTION;
+    PRAGMA EXCEPTION_INIT (no_realm, -9090);
+BEGIN
+    SELECT COUNT(*)
+    INTO error
+    FROM players
+    WHERE LOWER(realm) LIKE LOWER(realm_name);
+
+    IF error = 0 THEN
+        RAISE no_realm;
+    END IF;
+
+    OPEN c(realm_name);
+    LOOP
+        FETCH c INTO v_raid, v_cursor;
+        EXIT WHEN c%NOTFOUND;
+        dbms_output.put_line('-------------------------------');
+        dbms_output.put_line('RAID ' || UPPER(v_raid));
+        dbms_output.put_line('-------------------------------');
+        found := 0;
+        LOOP
+            FETCH v_cursor INTO v_name, v_nr;
+            EXIT WHEN v_cursor%NOTFOUND;
+            found := 1;
+            dbms_output.put_line(v_name || ' total raids: ' || v_nr);
+        END LOOP;
+        IF found = 0 THEN
+            dbms_output.put_line('None.');
+        END IF;
+    END LOOP;
+    CLOSE c;
+EXCEPTION
+    WHEN no_realm THEN
+        dbms_output.put_line('No realm with name: ' || realm_name);
+        dbms_output.put_line('Reaml list: ');
+        FOR r IN c2
+            LOOP
+                dbms_output.put_line(r.realm);
+            END LOOP;
+END ex7;
+
+BEGIN
+    ex7('Outland');
+END;
+
+BEGIN
+    ex7('nu exista');
+END;
+
+--8.
+-- pentru fiecare boss in vectorul de id-uri dat ca param sa se afle din multimea totala a recompenselor
+-- cele care au macar un bonus mai mare decat toate bonusurile oferite de recompensele bossului curent.
+
+CREATE OR REPLACE TYPE vect_b IS VARRAY(5000) OF NUMBER(38);
+CREATE OR REPLACE TYPE vect_r IS TABLE OF VARCHAR(255);
+CREATE OR REPLACE TYPE tabel IS TABLE OF vect_r;
+/
+
+CREATE OR REPLACE FUNCTION ex8(bosses_vect vect_b)
+    RETURN tabel IS
+
+    -- 3 exceptii
+    boss_not_found EXCEPTION;
+    PRAGMA EXCEPTION_INIT (boss_not_found, -2000);
+
+    emply_vector EXCEPTION;
+    PRAGMA EXCEPTION_INIT (emply_vector, -3000);
+
+    null_vector EXCEPTION;
+    PRAGMA EXCEPTION_INIT (null_vector, -4000);
+    nr     NUMBER;
+    maxi   bosses.boss_id%TYPE;
+    vector vect_r := vect_r();
+    output tabel  := tabel();
+BEGIN
+    IF bosses_vect IS NULL THEN
+        RAISE null_vector;
+    END IF;
+
+    IF bosses_vect.count = 0 THEN
+        RAISE emply_vector;
+    END IF;
+
+    -- !!!!!!
+    SELECT MAX(boss_id)
+    INTO maxi
+    FROM bosses;
+
+    FOR i IN 1..maxi
+        LOOP
+            output.extend;
+        END LOOP;
+
+    FOR i IN bosses_vect.first..bosses_vect.last
+        LOOP
+            SELECT COUNT(*)
+            INTO nr
+            FROM bosses
+            WHERE boss_id = bosses_vect(i);
+
+            IF nr = 0 THEN
+                RAISE boss_not_found;
+            END IF;
+
+            -- comanda cu 3 tabele
+            SELECT DISTINCT rewards."name" BULK COLLECT
+            INTO vector
+            FROM rewards
+                     JOIN has ON has.reward_id = rewards.reward_id
+                     JOIN bonuses ON bonuses.bonus_id = has.bonus_id
+            WHERE bonuses.quantity > ALL (SELECT bonuses.quantity
+                                          FROM rewards
+                                                   JOIN has ON has.reward_id = rewards.reward_id
+                                                   JOIN bonuses ON bonuses.bonus_id = has.bonus_id
+                                          WHERE rewards.boss_id = bosses_vect(i));
+            IF vector IS NULL THEN
+                output(bosses_vect(i)) := vect_r();
+            ELSE
+                output(bosses_vect(i)) := vector;
+            END IF;
+        END LOOP;
+    RETURN output;
+EXCEPTION
+    WHEN emply_vector THEN
+        dbms_output.put_line('Vector is empty.');
+        RETURN NULL;
+    WHEN null_vector THEN
+        dbms_output.put_line('Vector is null.');
+        RETURN NULL;
+    WHEN boss_not_found THEN
+        dbms_output.put_line('No boss found.');
+        RETURN NULL;
+END ex8;
+
+-- corect
+DECLARE
+    rezultat tabel  := tabel();
+    -- corect
+    input1   vect_b := vect_b(7, 8, 10);
+BEGIN
+    rezultat := ex8(input1);
+    IF rezultat IS NOT NULL THEN
+        FOR i IN rezultat.first..rezultat.last
+            LOOP
+                IF rezultat(i) IS NOT NULL THEN
+                    dbms_output.put_line('          BOSS_ID: ' || i || '          ');
+
+                    IF rezultat(i).count != 0 THEN
+                        FOR j IN rezultat(i).first..rezultat(i).last
+                            LOOP
+                                dbms_output.put_line(rezultat(i)(j));
+                            END LOOP;
+                    ELSE
+                        dbms_output.put_line('None.');
+                    END IF;
+                    dbms_output.put_line('---------------------------------');
+                END IF;
+            END LOOP;
+    END IF;
+END;
+
+-- boss not found
+DECLARE
+    rezultat tabel  := tabel();
+    -- boss not found
+    input2   vect_b := vect_b(7, 8, 100);
+BEGIN
+    rezultat := ex8(input2);
+    IF rezultat IS NOT NULL THEN
+        FOR i IN rezultat.first..rezultat.last
+            LOOP
+                IF rezultat(i) IS NOT NULL THEN
+                    dbms_output.put_line('          BOSS_ID: ' || i || '          ');
+
+                    IF rezultat(i).count != 0 THEN
+                        FOR j IN rezultat(i).first..rezultat(i).last
+                            LOOP
+                                dbms_output.put_line(rezultat(i)(j));
+                            END LOOP;
+                    ELSE
+                        dbms_output.put_line('None.');
+                    END IF;
+                    dbms_output.put_line('---------------------------------');
+                END IF;
+            END LOOP;
+    END IF;
+END;
+
+-- empty vector
+DECLARE
+    rezultat tabel  := tabel();
+    -- empty vector
+    input3   vect_b := vect_b();
+BEGIN
+    rezultat := ex8(input3);
+    IF rezultat IS NOT NULL THEN
+        FOR i IN rezultat.first..rezultat.last
+            LOOP
+                IF rezultat(i) IS NOT NULL THEN
+                    dbms_output.put_line('          BOSS_ID: ' || i || '          ');
+
+                    IF rezultat(i).count != 0 THEN
+                        FOR j IN rezultat(i).first..rezultat(i).last
+                            LOOP
+                                dbms_output.put_line(rezultat(i)(j));
+                            END LOOP;
+                    ELSE
+                        dbms_output.put_line('None.');
+                    END IF;
+                    dbms_output.put_line('---------------------------------');
+                END IF;
+            END LOOP;
+    END IF;
+END;
+
+-- null vector
+DECLARE
+    rezultat tabel := tabel();
+    -- null vector
+    input4   vect_b;
+BEGIN
+    rezultat := ex8(input4);
+    IF rezultat IS NOT NULL THEN
+        FOR i IN rezultat.first..rezultat.last
+            LOOP
+                IF rezultat(i) IS NOT NULL THEN
+                    dbms_output.put_line('          BOSS_ID: ' || i || '          ');
+
+                    IF rezultat(i).count != 0 THEN
+                        FOR j IN rezultat(i).first..rezultat(i).last
+                            LOOP
+                                dbms_output.put_line(rezultat(i)(j));
+                            END LOOP;
+                    ELSE
+                        dbms_output.put_line('None.');
+                    END IF;
+                    dbms_output.put_line('---------------------------------');
+                END IF;
+            END LOOP;
+    END IF;
+END;
+
+-- 9
+-- pentru un jucator sa se afle castigul mediu (castig mediu = castig / nr_raiduri_la_care_a_participat)
+
+-- pentru a testa mai introduc niste date.
+INSERT INTO players
+VALUES (10000, 'Maia', 'Outland', 'Night elf', 'F', 'mage', 'damage-dealer', 60);
+INSERT INTO players
+VALUES (10001, 'Ana', 'Outland', 'Night elf', 'F', 'mage', 'damage-dealer', 60);
+INSERT INTO players
+VALUES (10002, 'Ana', 'Outland', 'Night elf', 'F', 'mage', 'damage-dealer', 60);
+INSERT INTO players
+VALUES (10003, 'Camila', 'Outland', 'Night elf', 'F', 'mage', 'damage-dealer', 60);
+
+INSERT INTO instances
+VALUES (100, SYSDATE);
+
+INSERT INTO raids
+VALUES (1001, 'raid', 'locatie', 30, 40);
+
+INSERT INTO participates
+VALUES (1001, 10000, 100);
+
+
+CREATE OR REPLACE PROCEDURE ex9(input_name players."name"%TYPE, output OUT NUMBER)
+    IS
+    id       players.player_id%TYPE;
+    raids_nr NUMBER;
+    v_sum    NUMBER;
+    no_rewards EXCEPTION;
+    PRAGMA EXCEPTION_INIT (no_rewards, -3000);
+BEGIN
+    SELECT player_id
+    INTO id
+    FROM players
+    WHERE "name" = input_name;
+
+    SELECT COUNT(*)
+    INTO raids_nr
+    FROM participates
+    WHERE player_id = id;
+
+    SELECT SUM(NVL(sell_price, 0))
+    INTO v_sum
+    FROM participates
+             JOIN raids USING (raid_id)
+             JOIN maps USING (raid_id)
+             JOIN bosses USING (boss_id)
+             JOIN rewards USING (boss_id)
+    WHERE player_id = id;
+
+    output := NVL(v_sum, 0) / raids_nr;
+
+    IF v_sum IS NULL THEN
+        RAISE no_rewards;
+    END IF;
+
+EXCEPTION
+    WHEN too_many_rows THEN
+        dbms_output.put_line('More players with name: ' || input_name);
+    WHEN no_data_found THEN
+        dbms_output.put_line('No player with name: ' || input_name);
+    WHEN no_rewards THEN
+        dbms_output.put_line('Player ' || input_name || ' has no rewards');
+    WHEN zero_divide THEN
+        dbms_output.put_line('Player ' || input_name || ' has not participated to any raid yet');
+END ex9;
+
+-- corect
+DECLARE
+    output NUMBER;
+BEGIN
+    ex9('Tiana', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+-- too many rows
+DECLARE
+    output NUMBER;
+BEGIN
+    ex9('Ana', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+-- no data found
+DECLARE
+    output NUMBER;
+BEGIN
+    ex9('nu exista', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+-- no rewards
+DECLARE
+    output NUMBER;
+BEGIN
+    ex9('Maia', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+-- zero divide
+DECLARE
+    output NUMBER;
+BEGIN
+    ex9('Camila', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+
+-- 10
+-- trigger care de fiecare data cand se adauga o instanta noua le sterge pe cele expirate (care sunt mai vechi de 5 ani)
+
+-- pentru a testa am inserat niste instante expirate
+INSERT INTO instances
+VALUES (200, DATE'2000-01-01');
+INSERT INTO instances
+VALUES (201, DATE'2001-01-01');
+INSERT INTO participates
+VALUES (1, 17, 200);
+INSERT INTO participates
+VALUES (1, 19, 200);
+INSERT INTO participates
+VALUES (2, 18, 201);
+INSERT INTO participates
+VALUES (2, 17, 201);
+
+CREATE OR REPLACE TRIGGER trg_10
+    AFTER INSERT
+    ON instances
+DECLARE
+BEGIN
+    FOR i IN (SELECT *
+              FROM instances
+              WHERE EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM create_date) > 5)
+        LOOP
+            dbms_output.put_line('Expired instance found.');
+            DELETE FROM participates WHERE instance_id = i.instance_id;
+            DELETE FROM instances WHERE instance_id = i.instance_id;
+        END LOOP;
+END;
+/
+
+-- declansare trigger
+INSERT INTO instances
+VALUES (203, DATE'2010-01-01');
+
+-- stergere trigger
+DROP TRIGGER trg_10;
+
+SELECT *
+FROM instances;
+
+
+
+-- 11
+-- compound trigger
+CREATE OR REPLACE TRIGGER trg_11
+    FOR UPDATE OR INSERT
+    ON enemies
+    COMPOUND TRIGGER
+    TYPE rec IS RECORD
+                (
+                    enemy_id enemies.enemy_id%TYPE,
+                    health   enemies.health%TYPE
+                );
+
+    TYPE ind_tb IS TABLE OF rec INDEX BY PLS_INTEGER;
+    tab ind_tb;
+
+AFTER EACH ROW IS
+BEGIN
+    tab(tab.count + 1).enemy_id := :new.enemy_id;
+    tab(tab.count).health := :new.health;
+END AFTER EACH ROW;
+
+    AFTER STATEMENT IS
+        avgi NUMBER;
+    BEGIN
+        SELECT AVG(health)
+        INTO avgi
+        FROM enemies
+        WHERE health > 0;
+
+        FOR i IN tab.first..tab.last
+            LOOP
+                IF tab(i).health < avgi / 3 OR tab(i).health > avgi * 3
+                THEN
+                    UPDATE enemies
+                    SET health = avgi -- media rotunjita
+                    WHERE enemies.enemy_id = tab(i).enemy_id;
+                END IF;
+            END LOOP;
+    END AFTER STATEMENT;
+    END trg_11;
+
+-- declansare trigger
+INSERT INTO enemies
+VALUES (1000, 'nume', 5000, 1000);
+
+-- stergere trigger
+DROP TRIGGER trg_11;
+
+SELECT *
+FROM enemies;
+
+-- 12
+-- trigger care inregistreaza toti useri care se delogeaza in timpul
+-- programului de lucru
+CREATE OR REPLACE TRIGGER trg_12
+    BEFORE LOGOFF
+    ON SCHEMA
+BEGIN
+    IF TO_CHAR(SYSDATE, 'HH24') BETWEEN 6 AND 18 THEN
+        INSERT INTO log_offs
+        VALUES (sys.login_user, SYSTIMESTAMP);
+    END IF;
+END;
+/
+-- stergere trigger
+DROP TRIGGER trg_12;
+
+SELECT *
+FROM log_offs;
+
+
+-- 13
+CREATE OR REPLACE PACKAGE pack_13 IS
+    TYPE vect_b IS VARRAY(5000) OF NUMBER(38);
+    TYPE vect_r IS TABLE OF VARCHAR(255);
+    TYPE tabel IS TABLE OF vect_r;
+
+    PROCEDURE ex6(month NUMBER, year NUMBER);
+    PROCEDURE ex7(realm_name players.realm%TYPE);
+    FUNCTION ex8(bosses_vect vect_b)
+        RETURN tabel;
+    PROCEDURE ex9(input_name players."name"%TYPE, output OUT NUMBER);
+END pack_13;
+
+CREATE OR REPLACE PACKAGE BODY pack_13 IS
+    PROCEDURE ex6(month NUMBER, year NUMBER)
+        IS
+        TYPE player_rec IS RECORD
+                           (
+                               name  players."name"%TYPE,
+                               realm players.realm%TYPE,
+                               kills NUMBER
+                           );
+        TYPE vect_players IS VARRAY(1000) OF player_rec;
+        TYPE raid_ranking IS RECORD
+                             (
+                                 raid_name raids."name"%TYPE,
+                                 players   vect_players
+                             );
+        -- colectie 1 : colectie imbricata care contine numele raidului si lista de jucatori a acelui raid
+        TYPE rankings_tbl IS TABLE OF raid_ranking
+            INDEX BY BINARY_INTEGER;
+        rankings  rankings_tbl;
+        v_players vect_players;
+        -- colectie 2: vector de raiduri
+        TYPE raids_vect IS VARRAY(100) OF raids%ROWTYPE;
+        v_raids   raids_vect;
+    BEGIN
+        SELECT * BULK COLLECT
+        INTO v_raids
+        FROM raids;
+
+        FOR i IN v_raids.first..v_raids.last
+            LOOP
+                SELECT MAX(players."name"),
+                       MAX(players.realm),
+                       COUNT(*) BULK COLLECT
+                INTO v_players
+                FROM players
+                         JOIN participates USING (player_id)
+                         JOIN instances USING (instance_id)
+                         JOIN raids USING (raid_id)
+                         JOIN maps USING (raid_id)
+                         JOIN bosses USING (boss_id)
+                WHERE raid_id = v_raids(i).raid_id
+                  AND EXTRACT(MONTH FROM instances.create_date) = month
+                  AND EXTRACT(YEAR FROM instances.create_date) = year
+                GROUP BY player_id
+                ORDER BY COUNT(*) DESC;
+
+                rankings(i).raid_name := v_raids(i)."name";
+                rankings(i).players := v_players;
+            END LOOP;
+
+        FOR i IN rankings.first..rankings.last
+            LOOP
+                dbms_output.put_line('Raid: ' || rankings(i).raid_name);
+
+                IF rankings(i).players.count = 0 THEN
+                    dbms_output.put_line('The are no raids with the given dates.');
+                ELSE
+                    dbms_output.put_line('Place    Player    Realm    Kills');
+                    FOR j IN rankings(i).players.first..rankings(i).players.last
+                        LOOP
+                            dbms_output.put_line(j || CHR(9) || CHR(9) || rankings(i).players(j).name || CHR(9) ||
+                                                 CHR(9) ||
+                                                 rankings(i).players(j).realm || CHR(9) || CHR(9) ||
+                                                 rankings(i).players(j).kills);
+                        END LOOP;
+                END IF;
+                dbms_output.put_line('-------------------------------------');
+            END LOOP;
+    END ex6;
+
+    PROCEDURE ex7(realm_name players.realm%TYPE)
+        IS
+        TYPE refcursor IS REF CURSOR;
+        v_cursor refcursor;
+        -- cursor 1 : cursor imbricat cu paramentru
+        CURSOR c(realm_name players.realm%TYPE) IS
+            (SELECT extern."name",
+                    CURSOR (SELECT MAX("name"), COUNT(*)
+                            FROM players
+                                     JOIN participates USING (player_id)
+                            WHERE LOWER(realm) LIKE LOWER(realm_name)
+                              AND participates.raid_id = extern.raid_id
+                            GROUP BY player_id
+                            HAVING COUNT(*) = (SELECT MAX(COUNT(*))
+                                               FROM players
+                                                        JOIN participates USING (player_id)
+                                               WHERE LOWER(realm) LIKE LOWER(realm_name)
+                                                 AND participates.raid_id = extern.raid_id
+                                               GROUP BY player_id))
+             FROM raids extern);
+        v_raid   raids."name"%TYPE;
+        v_nr     NUMBER;
+        v_name   players."name"%TYPE;
+        found    NUMBER := 0;
+        -- cursor 2 :
+        CURSOR c2 IS (SELECT DISTINCT realm
+                      FROM players);
+        error    players.realm%TYPE;
+        no_realm EXCEPTION;
+        PRAGMA EXCEPTION_INIT (no_realm, -9090);
+    BEGIN
+        SELECT COUNT(*)
+        INTO error
+        FROM players
+        WHERE LOWER(realm) LIKE LOWER(realm_name);
+
+        IF error = 0 THEN
+            RAISE no_realm;
+        END IF;
+
+        OPEN c(realm_name);
+        LOOP
+            FETCH c INTO v_raid, v_cursor;
+            EXIT WHEN c%NOTFOUND;
+            dbms_output.put_line('-------------------------------');
+            dbms_output.put_line('RAID ' || UPPER(v_raid));
+            dbms_output.put_line('-------------------------------');
+            found := 0;
+            LOOP
+                FETCH v_cursor INTO v_name, v_nr;
+                EXIT WHEN v_cursor%NOTFOUND;
+                found := 1;
+                dbms_output.put_line(v_name || ' total raids: ' || v_nr);
+            END LOOP;
+            IF found = 0 THEN
+                dbms_output.put_line('None.');
+            END IF;
+        END LOOP;
+        CLOSE c;
+    EXCEPTION
+        WHEN no_realm THEN
+            dbms_output.put_line('No realm with name: ' || realm_name);
+            dbms_output.put_line('Reaml list: ');
+            FOR r IN c2
+                LOOP
+                    dbms_output.put_line(r.realm);
+                END LOOP;
+    END ex7;
+
+    FUNCTION ex8(bosses_vect vect_b)
+        RETURN tabel IS
+
+        -- 3 exceptii
+        boss_not_found EXCEPTION;
+        PRAGMA EXCEPTION_INIT (boss_not_found, -2000);
+
+        emply_vector EXCEPTION;
+        PRAGMA EXCEPTION_INIT (emply_vector, -3000);
+
+        null_vector EXCEPTION;
+        PRAGMA EXCEPTION_INIT (null_vector, -4000);
+        nr     NUMBER;
+        maxi   bosses.boss_id%TYPE;
+        vector vect_r := vect_r();
+        output tabel  := tabel();
+    BEGIN
+        IF bosses_vect IS NULL THEN
+            RAISE null_vector;
+        END IF;
+
+        IF bosses_vect.count = 0 THEN
+            RAISE emply_vector;
+        END IF;
+
+        -- !!!!!!
+        SELECT MAX(boss_id)
+        INTO maxi
+        FROM bosses;
+
+        FOR i IN 1..maxi
+            LOOP
+                output.extend;
+            END LOOP;
+
+        FOR i IN bosses_vect.first..bosses_vect.last
+            LOOP
+                SELECT COUNT(*)
+                INTO nr
+                FROM bosses
+                WHERE boss_id = bosses_vect(i);
+
+                IF nr = 0 THEN
+                    RAISE boss_not_found;
+                END IF;
+
+                -- comanda cu 3 tabele
+                SELECT DISTINCT rewards."name" BULK COLLECT
+                INTO vector
+                FROM rewards
+                         JOIN has ON has.reward_id = rewards.reward_id
+                         JOIN bonuses ON bonuses.bonus_id = has.bonus_id
+                WHERE bonuses.quantity > ALL (SELECT bonuses.quantity
+                                              FROM rewards
+                                                       JOIN has ON has.reward_id = rewards.reward_id
+                                                       JOIN bonuses ON bonuses.bonus_id = has.bonus_id
+                                              WHERE rewards.boss_id = bosses_vect(i));
+                IF vector IS NULL THEN
+                    output(bosses_vect(i)) := vect_r();
+                ELSE
+                    output(bosses_vect(i)) := vector;
+                END IF;
+            END LOOP;
+        RETURN output;
+    EXCEPTION
+        WHEN emply_vector THEN
+            dbms_output.put_line('Vector is empty.');
+            RETURN NULL;
+        WHEN null_vector THEN
+            dbms_output.put_line('Vector is null.');
+            RETURN NULL;
+        WHEN boss_not_found THEN
+            dbms_output.put_line('No boss found.');
+            RETURN NULL;
+    END ex8;
+
+    PROCEDURE ex9(input_name players."name"%TYPE, output OUT NUMBER)
+        IS
+        id       players.player_id%TYPE;
+        raids_nr NUMBER;
+        v_sum    NUMBER;
+        no_rewards EXCEPTION;
+        PRAGMA EXCEPTION_INIT (no_rewards, -3000);
+    BEGIN
+        SELECT player_id
+        INTO id
+        FROM players
+        WHERE "name" = input_name;
+
+        SELECT COUNT(*)
+        INTO raids_nr
+        FROM participates
+        WHERE player_id = id;
+
+        SELECT SUM(NVL(sell_price, 0))
+        INTO v_sum
+        FROM participates
+                 JOIN raids USING (raid_id)
+                 JOIN maps USING (raid_id)
+                 JOIN bosses USING (boss_id)
+                 JOIN rewards USING (boss_id)
+        WHERE player_id = id;
+
+        output := NVL(v_sum, 0) / raids_nr;
+
+        IF v_sum IS NULL THEN
+            RAISE no_rewards;
+        END IF;
+
+    EXCEPTION
+        WHEN too_many_rows THEN
+            dbms_output.put_line('More players with name: ' || input_name);
+        WHEN no_data_found THEN
+            dbms_output.put_line('No player with name: ' || input_name);
+        WHEN no_rewards THEN
+            dbms_output.put_line('Player ' || input_name || ' has no rewards');
+        WHEN zero_divide THEN
+            dbms_output.put_line('Player ' || input_name || ' has not participated to any raid yet');
+    END ex9;
+END pack_13;
+
+
+-- apeluri
+-- ex 6
+BEGIN
+    pack_13.ex6(6, 2022);
+END;
+
+-- ex 7
+BEGIN
+    pack_13.ex7('Outland');
+END;
+
+-- ex 8
+DECLARE
+    rezultat pack_13.tabel  := pack_13.tabel();
+    -- corect
+    input1   pack_13.vect_b := pack_13.vect_b(7, 8, 10);
+BEGIN
+    rezultat := pack_13.ex8(input1);
+    IF rezultat IS NOT NULL THEN
+        FOR i IN rezultat.first..rezultat.last
+            LOOP
+                IF rezultat(i) IS NOT NULL THEN
+                    dbms_output.put_line('          BOSS_ID: ' || i || '          ');
+
+                    IF rezultat(i).count != 0 THEN
+                        FOR j IN rezultat(i).first..rezultat(i).last
+                            LOOP
+                                dbms_output.put_line(rezultat(i)(j));
+                            END LOOP;
+                    ELSE
+                        dbms_output.put_line('None.');
+                    END IF;
+                    dbms_output.put_line('---------------------------------');
+                END IF;
+            END LOOP;
+    END IF;
+END;
+
+-- ex 9
+DECLARE
+    output NUMBER;
+BEGIN
+    pack_13.ex9('Tiana', output);
+    dbms_output.put_line('Average earning: ' || NVL(output, -1));
+END;
+
+
+-- 14
+-- adaug nou boss la raid-ul "Enternal Palace"
+INSERT INTO bosses
+VALUES (1000, 'Boss 1', 100, 1000, 100, NULL);
+
+INSERT INTO maps
+VALUES (1000, 'harta boss 1', 1, 1000);
+
+INSERT INTO abilities
+VALUES (1000, 'Abilitate boss 1', 100, 5001, 1000);
+
+CREATE OR REPLACE PACKAGE pack_14 IS
+    -- cursor imbricat cu parametru care pentru un raid dat
+    -- selecteaza bossi si abilitatile lor
+    CURSOR bosses_cursor(raid_id_input raids.raid_id%TYPE) IS
+        (SELECT extern.boss_id,
+                extern."name",
+                CURSOR (SELECT *
+                        FROM abilities
+                        WHERE boss_id = extern.boss_id)
+         FROM bosses extern
+                  JOIN maps ON extern.boss_id = maps.boss_id
+         WHERE raid_id = raid_id_input);
+    -- functie care returneaza id-ul unui raid fiind dat ca param numele sau
+    FUNCTION get_raid(raid_name raids."name"%TYPE)
+        RETURN raids.raid_id%TYPE;
+    --pentru fiecare boss din raidul dat sa ii se calculeze dificultatea (in functie de cat de puternice sunt abilitatile sale)
+    PROCEDURE calc_dif(raid_name raids."name"%TYPE);
+
+
+    TYPE player_list_type IS VARRAY(1000) OF players%ROWTYPE;
+    TYPE team_rec IS RECORD
+                     (
+                         raid_name   raids."name"%TYPE,
+                         raid_id     raids.raid_id%TYPE,
+                         player_list player_list_type
+                     );
+    -- tab indexat de vectori care retine echipele de jucatori si raidul la care au participat
+    TYPE teams_type IS TABLE OF team_rec
+        INDEX BY PLS_INTEGER;
+    teams teams_type;
+    FUNCTION get_reward_money(idd raids.raid_id%TYPE)
+        RETURN NUMBER;
+    PROCEDURE calc_teams;
+    PROCEDURE print_teams;
+
+END pack_14;
+
+CREATE OR REPLACE PACKAGE BODY pack_14 IS
+    -- functie care returneaza id-ul unui raid fiind dat ca param numele sau
+    FUNCTION get_raid(raid_name raids."name"%TYPE)
+        RETURN raids.raid_id%TYPE IS
+        id raids.raid_id%TYPE;
+    BEGIN
+        SELECT raid_id
+        INTO id
+        FROM raids
+        WHERE LOWER("name") LIKE LOWER(raid_name);
+        RETURN id;
+    EXCEPTION
+        WHEN no_data_found THEN
+            dbms_output.put_line('No raid with name: ' || raid_name);
+            RETURN NULL;
+        WHEN too_many_rows THEN
+            dbms_output.put_line('More raids with name: ' || raid_name);
+            RETURN NULL;
+    END get_raid;
+
+    --pentru fiecare boss din raidul dat sa ii se calculeze dificultatea (in functie de cat de puternice sunt abilitatile sale)
+    -- dc sum(damage) < 200 => easy
+    --    200 <= sum(damage) < 400 => medium
+    --    altfel => hard
+    PROCEDURE calc_dif(raid_name raids."name"%TYPE) IS
+        id       raids.raid_id%TYPE;
+        id_boss  bosses.boss_id%TYPE;
+        name     bosses."name"%TYPE;
+        TYPE refcursor IS REF CURSOR;
+        v_cursor refcursor;
+        summ     NUMBER;
+        dific    VARCHAR(255);
+        ability  abilities%ROWTYPE;
+    BEGIN
+        id := get_raid(raid_name);
+        IF id IS NOT NULL THEN
+            OPEN bosses_cursor(id);
+            LOOP
+                FETCH bosses_cursor INTO id_boss, name, v_cursor;
+                EXIT WHEN bosses_cursor%NOTFOUND;
+                summ := 0;
+                LOOP
+                    FETCH v_cursor INTO ability;
+                    EXIT WHEN v_cursor%NOTFOUND;
+                    summ := summ + NVL(ability.damage, 0);
+                END LOOP;
+                CASE
+                    WHEN summ < 200 THEN dific := 'Easy';
+                    WHEN summ < 400 THEN dific := 'Medium';
+                    ELSE dific := 'Hard';
+                    END CASE;
+                UPDATE bosses
+                SET bosses.dificulty = dific
+                WHERE boss_id = id_boss;
+            END LOOP;
+            CLOSE bosses_cursor;
+        END IF;
+    END calc_dif;
+
+    -- procedura care afla fiecare echipa din baza de date
+    -- (echipa = jucatori care au participat la aceeasi instanta)
+    PROCEDURE calc_teams IS
+        player_list player_list_type;
+        raid_name   raids."name"%TYPE;
+        idd         raids.raid_id%TYPE;
+        nr          NUMBER := 0;
+    BEGIN
+        FOR inst IN (SELECT DISTINCT instance_id FROM participates)
+            LOOP
+                SELECT players.* BULK COLLECT
+                INTO player_list
+                FROM players
+                         JOIN participates ON players.player_id = participates.player_id
+                WHERE instance_id = inst.instance_id;
+
+                SELECT DISTINCT "name", raid_id
+                INTO raid_name, idd
+                FROM participates
+                         JOIN raids USING (raid_id)
+                WHERE instance_id = inst.instance_id;
+
+                nr := nr + 1;
+                teams(nr).player_list := player_list;
+                teams(nr).raid_name := raid_name;
+                teams(nr).raid_id := idd;
+            END LOOP;
+    END calc_teams;
+
+    -- functie care returneaza suma totala de bani castigata in cadrul raidului dat
+    -- ca parametru
+    FUNCTION get_reward_money(idd raids.raid_id%TYPE)
+        RETURN NUMBER
+        IS
+        summ NUMBER := 0;
+        err  raids.raid_id%TYPE;
+    BEGIN
+        SELECT raid_id
+        INTO err
+        FROM raids
+        WHERE raid_id = idd;
+
+        SELECT SUM(NVL(sell_price, 0))
+        INTO summ
+        FROM raids
+                 JOIN maps USING (raid_id)
+                 JOIN bosses USING (boss_id)
+                 JOIN rewards USING (boss_id)
+        WHERE raid_id = idd;
+        RETURN summ;
+    EXCEPTION
+        WHEN no_data_found THEN
+            dbms_output.put_line('No raid with id: ' || idd);
+            RETURN NULL;
+    END get_reward_money;
+
+
+    -- procedura care afiseaza echipele impreuna cu suma de bani castigata
+    PROCEDURE print_teams IS
+    BEGIN
+        calc_teams;
+        FOR i IN teams.first..teams.last
+            LOOP
+                dbms_output.put_line('      TEAM ' || i || '      ');
+                dbms_output.put_line('raid: ' || teams(i).raid_name);
+                FOR p IN teams(i).player_list.first..teams(i).player_list.last
+                    LOOP
+                        dbms_output.put_line(teams(i).player_list(p).player_id || ' ' ||
+                                             teams(i).player_list(p)."name");
+                    END LOOP;
+                dbms_output.put_line('money earned ' || NVL(get_reward_money(teams(i).raid_id), 0));
+                dbms_output.put_line('------------------------');
+            END LOOP;
+    END print_teams;
+END pack_14;
+
+-- apelare cursor
+
+INSERT INTO abilities
+VALUES (1001, 'abilitate1', 123, 123, 6);
+
+DECLARE
+    TYPE refcursor IS REF CURSOR;
+    v_cursor refcursor;
+    id       bosses.boss_id%TYPE;
+    name     bosses."name"%TYPE;
+    ability  abilities%ROWTYPE;
+BEGIN
+    OPEN pack_14.bosses_cursor(1);
+    LOOP
+        FETCH pack_14.bosses_cursor INTO id, name, v_cursor;
+        EXIT WHEN pack_14.bosses_cursor%NOTFOUND;
+        dbms_output.put_line('-------------------------------');
+        dbms_output.put_line('BOSS ' || UPPER(name) || ' ID: ' || id);
+        dbms_output.put_line('-------------------------------');
+        LOOP
+            FETCH v_cursor INTO ability;
+            EXIT WHEN v_cursor%NOTFOUND;
+            dbms_output.put_line(ability."name" || '  ' || ability.damage);
+        END LOOP;
+    END LOOP;
+    CLOSE pack_14.bosses_cursor;
+END;
+
+-- apelare functie get_raid
+INSERT INTO raids
+VALUES (1000, 'Eternal palace', 'locatie', 12, 40);
+
+BEGIN
+    dbms_output.put_line('ID: ' || pack_14.get_raid('The Nighthold'));
+END;
+BEGIN
+    dbms_output.put_line('ID: ' || pack_14.get_raid('Nu exista'));
+END;
+BEGIN
+    dbms_output.put_line('ID: ' || pack_14.get_raid('Eternal palace'));
+END;
+
+-- apelare procedura calc_dif
+INSERT INTO raids
+VALUES (1001, 'raid fara boss-i', 'loc', 5, 60);
+
+BEGIN
+    pack_14.calc_dif('nu exista');
+END;
+BEGIN
+    pack_14.calc_dif('Eternal palace');
+END;
+BEGIN
+    pack_14.calc_dif('Icecrown Citadel');
+END;
+BEGIN
+    pack_14.calc_dif('raid fara boss-i');
+END;
+
+-- apel proc calc_teams
+BEGIN
+    pack_14.print_teams;
+END;
